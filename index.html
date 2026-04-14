@@ -3,812 +3,584 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Octo Control — Capas de Almofadas Nerd</title>
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  <title>Octo Control — Select Your Pillow</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600&family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
-    /* ─── RESET & BASE ─── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --black:   #1a1a1a;
-      --yellow:  #F5A700;
-      --white:   #ffffff;
-      --gray:    #2e2e2e;
-      --light:   #f5f5f0;
-      --muted:   #888;
-      --font-display: 'Bebas Neue', sans-serif;
-      --font-body:    'Space Grotesk', sans-serif;
+      --accent: #F9A825;
+      --bg: #0a0a0a;
+      --text: #f0f0f0;
+      --muted: #9a9895;
+      --tr: 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
-    html { scroll-behavior: smooth; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; }
 
-    body {
-      font-family: var(--font-body);
-      background: var(--white);
-      color: var(--black);
-      overflow-x: hidden;
+    /* ─── BG ─────────────────────────────────────────── */
+    .bg-layer {
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url('assets/images/fundo-chevron.jpg');
+      background-size: cover; background-position: center top;
+      opacity: 1;
+      animation: bgDrift 18s linear infinite;
+    }
+    @keyframes bgDrift {
+      0%   { background-position: center 0%; }
+      100% { background-position: center 100%; }
+    }
+    .bg-layer::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(0,0,0,0.6);
+    }
+    .bg-bloom {
+      position: fixed; left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%; height: 80%;
+      background: radial-gradient(ellipse at center, var(--accent) 0%, transparent 65%);
+      opacity: 0.04; z-index: 1; pointer-events: none;
+      filter: blur(80px);
+      transition: background 0.8s ease, opacity 0.6s ease;
     }
 
-    /* ─── CHEVRON PATTERN ─── */
-    .bg-chevron {
-      background-color: var(--black);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40'%3E%3Cpolyline points='0,20 40,0 80,20' fill='none' stroke='%23272727' stroke-width='18'/%3E%3Cpolyline points='0,40 40,20 80,40' fill='none' stroke='%23272727' stroke-width='18'/%3E%3C/svg%3E");
+    /* ─── SCANLINES ──────────────────────────────────── */
+    .scanlines {
+      position: fixed; inset: 0; pointer-events: none; z-index: 300;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.035) 2px, rgba(0,0,0,0.035) 4px
+      );
     }
 
-    /* ─── HEADER ─── */
-    header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 40px;
-      height: 64px;
-      background: rgba(26,26,26,0.96);
-      backdrop-filter: blur(8px);
+    /* ─── LOADING ────────────────────────────────────── */
+    .loading-screen {
+      position: fixed; inset: 0; z-index: 500;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 32px;
+      background-image: url('assets/images/fundo-chevron.jpg');
+      background-size: cover; background-position: center;
+      animation: bgDrift 18s linear infinite;
+    }
+    .loading-screen::before {
+      content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.6);
+    }
+    .loading-logo {
+      position: relative; z-index: 1; height: 80px;
+      animation: logoPulse 0.9s ease-in-out infinite;
+    }
+    .loading-press {
+      position: relative; z-index: 1;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px; color: var(--muted); letter-spacing: 0.2em;
+      animation: blink 1.1s step-start infinite;
+    }
+    @keyframes logoPulse {
+      0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 0px  rgba(249,168,37,0)); }
+      50%       { transform: scale(1.12); filter: drop-shadow(0 0 28px rgba(249,168,37,0.6)); }
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .loading-screen.fade-out { animation: loadFade 0.55s ease forwards !important; }
+    @keyframes loadFade { to { opacity: 0; pointer-events: none; } }
+
+    /* ─── SELECTION FLASH ────────────────────────────── */
+    .sel-flash {
+      position: fixed; inset: 0; background: #fff;
+      opacity: 0; pointer-events: none; z-index: 400;
+      transition: opacity 0.12s ease;
     }
 
-    .header-logo img {
-      height: 61px;
-      display: block;
-      transform: translateY(25%);
-    }
-
+    /* ─── NAV ────────────────────────────────────────── */
     nav {
-      display: flex;
-      gap: 32px;
-      align-items: center;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: center;
+      padding: 18px 52px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      background: rgba(0,0,0,0.3); backdrop-filter: blur(8px);
+      overflow: visible;
+    }
+    .nav-logo { overflow: visible; position: relative; z-index: 55; }
+    .nav-logo img {
+      height: 36px; display: block;
+      transform: scale(2.1) translateY(45%);
+      transform-origin: left center;
+    }
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-counter { font-size: 11px; letter-spacing: 0.1em; color: #444; font-weight: 500; }
+    .nav-counter span { color: var(--accent); }
+
+    /* ─── ARENA ──────────────────────────────────────── */
+    .arena {
+      position: fixed;
+      top: 70px; left: 0; right: 0; bottom: 180px;
+      z-index: 5;
+      display: flex; align-items: center; justify-content: center;
     }
 
-    nav a {
-      font-family: var(--font-body);
-      font-weight: 600;
-      font-size: 13px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--white);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
-    nav a:hover { color: var(--yellow); }
-
-    .btn-comprar {
-      background: var(--yellow);
-      color: var(--black) !important;
-      padding: 8px 20px;
-      border-radius: 2px;
-      font-weight: 700 !important;
-    }
-
-    .btn-comprar:hover {
-      background: #ffc107 !important;
-      color: var(--black) !important;
-    }
-
-    /* ─── HERO ─── */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      padding: 100px 40px 60px;
-      position: relative;
+    /* ─── COVERFLOW ──────────────────────────────────── */
+    .coverflow-area {
+      position: absolute; inset: 0;
+      perspective: 1100px;
+      perspective-origin: 50% 50%;
       overflow: hidden;
     }
-
-    .hero-content {
-      position: relative;
-      z-index: 2;
-      max-width: 560px;
-    }
-
-    .hero-eyebrow {
-      font-family: var(--font-body);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--yellow);
-      margin-bottom: 16px;
-    }
-
-    .hero-title {
-      font-family: var(--font-display);
-      font-size: clamp(56px, 8vw, 100px);
-      line-height: 0.95;
-      color: var(--white);
-      margin-bottom: 24px;
-    }
-
-    .hero-title span { color: var(--yellow); }
-
-    .hero-desc {
-      font-size: 16px;
-      line-height: 1.7;
-      color: #aaa;
-      margin-bottom: 36px;
-      max-width: 420px;
-    }
-
-    .hero-cta {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .btn-primary {
-      display: inline-block;
-      background: var(--yellow);
-      color: var(--black);
-      font-family: var(--font-display);
-      font-size: 20px;
-      letter-spacing: 0.05em;
-      padding: 14px 36px;
-      text-decoration: none;
-      transition: background 0.2s, transform 0.15s;
-    }
-
-    .btn-primary:hover {
-      background: #ffc107;
-      transform: translateY(-2px);
-    }
-
-    .btn-outline {
-      display: inline-block;
-      border: 2px solid #444;
-      color: #aaa;
-      font-family: var(--font-body);
-      font-size: 14px;
-      font-weight: 600;
-      padding: 12px 28px;
-      text-decoration: none;
-      letter-spacing: 0.05em;
-      transition: border-color 0.2s, color 0.2s;
-    }
-
-    .btn-outline:hover { border-color: var(--yellow); color: var(--yellow); }
-
-    .hero-image {
+    .coverflow-item {
       position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: 58%;
-      overflow: hidden;
+      left: 50%; top: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      cursor: pointer;
+      transition: transform var(--tr), opacity var(--tr), filter var(--tr), z-index 0s;
+      will-change: transform, opacity, filter;
     }
-
-    @media (max-width: 768px) {
-      .hero-image { display: none; }
-      nav a:not(.btn-comprar) { display: none; }
+    .coverflow-item img {
+      display: block; height: 64vh; width: auto;
+      object-fit: contain;
+      pointer-events: none; user-select: none;
+      filter: drop-shadow(0 24px 60px rgba(0,0,0,0.85));
     }
-
-    .hero-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center center;
+    .coverflow-item.active img {
+      animation: pillowFloat 5s ease-in-out infinite;
     }
-
-    .hero-image::before {
+    @keyframes pillowFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      33%       { transform: translateY(-14px) rotate(0.4deg); }
+      66%       { transform: translateY(-8px) rotate(-0.4deg); }
+    }
+    /* Glow ring on active */
+    .coverflow-item.active::after {
       content: '';
       position: absolute;
-      inset: 0;
-      background: linear-gradient(to right, var(--black) 0%, transparent 40%);
-      z-index: 1;
-    }
-
-    .hero-badge {
-      position: absolute;
-      bottom: 40px;
-      left: 40px;
-      display: flex;
-      gap: 32px;
-    }
-
-    .badge-item {
-      text-align: center;
-    }
-
-    .badge-num {
-      font-family: var(--font-display);
-      font-size: 36px;
-      color: var(--yellow);
-      line-height: 1;
-    }
-
-    .badge-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #666;
-    }
-
-    /* ─── SECTION SHARED ─── */
-    section { padding: 80px 40px; }
-
-    .section-header {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-bottom: 48px;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .section-eyebrow {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--yellow);
-      margin-bottom: 8px;
-    }
-
-    .section-title {
-      font-family: var(--font-display);
-      font-size: clamp(36px, 5vw, 60px);
-      line-height: 1;
-      color: var(--black);
-    }
-
-    .section-title.light { color: var(--white); }
-
-    /* ─── FILTROS ─── */
-    .filters {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 40px;
-    }
-
-    .filter-btn {
-      background: none;
-      border: 2px solid #ddd;
-      padding: 8px 20px;
-      font-family: var(--font-body);
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-      transition: all 0.2s;
-      color: #555;
-    }
-
-    .filter-btn:hover, .filter-btn.active {
-      background: var(--yellow);
-      border-color: var(--yellow);
-      color: var(--black);
-    }
-
-    /* ─── GRID DE PRODUTOS ─── */
-    .products-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 24px;
-    }
-
-    @media (max-width: 1100px) { .products-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 800px)  { .products-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 480px)  { .products-grid { grid-template-columns: 1fr; } }
-
-    .product-card {
-      cursor: pointer;
-      position: relative;
-      background: var(--light);
-      transition: transform 0.25s, box-shadow 0.25s;
-      text-decoration: none;
-      color: inherit;
-      display: block;
-    }
-
-    .product-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-    }
-
-    .card-image {
-      position: relative;
-      aspect-ratio: 1;
-      overflow: hidden;
-      background: #fff;
-    }
-
-    .card-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      transition: transform 0.4s;
-    }
-
-    .product-card:hover .card-image img {
-      transform: scale(1.05);
-    }
-
-    .card-tag {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background: var(--yellow);
-      color: var(--black);
-      font-family: var(--font-display);
-      font-size: 13px;
-      letter-spacing: 0.05em;
-      padding: 4px 10px;
-    }
-
-    .card-body {
-      padding: 16px 16px 20px;
-    }
-
-    .card-universe {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-
-    .card-name {
-      font-family: var(--font-display);
-      font-size: 22px;
-      line-height: 1.1;
-      color: var(--black);
-      margin-bottom: 12px;
-    }
-
-    .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .card-price {
-      font-family: var(--font-display);
-      font-size: 24px;
-      color: var(--black);
-    }
-
-    .card-colors {
-      display: flex;
-      gap: 6px;
-    }
-
-    .color-dot {
-      width: 14px;
-      height: 14px;
+      inset: -20px;
       border-radius: 50%;
-      border: 2px solid rgba(0,0,0,0.1);
+      background: radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%);
+      opacity: 0.12; filter: blur(30px);
+      pointer-events: none; z-index: -1;
+      transition: background 0.6s ease;
     }
 
-    /* ─── FEATURES ─── */
-    .features {
-      background: var(--black);
+    /* ─── HUD PANEL ──────────────────────────────────── */
+    .hud {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 30;
+      padding: 24px 36px 28px;
+      background: rgba(0,0,0,0.78);
+      backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .hud { transition: none; }
+
+    .hud-player {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 6px; letter-spacing: 0.2em;
+      color: var(--accent); margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .hud-player span { color: var(--muted); }
+
+    .hud-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 6px; color: var(--muted);
+      letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .hud-tag::before {
+      content: ''; display: block; width: 22px; height: 1px;
+      background: var(--accent);
+    }
+    .hud-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(40px, 4.5vw, 68px);
+      line-height: 0.9; color: var(--text);
+      letter-spacing: 0.01em; margin-bottom: 14px;
+    }
+    .hud-desc {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 6.5px; line-height: 2.1;
+      color: var(--muted); margin-bottom: 20px;
+      max-width: 300px;
     }
 
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 32px;
-      margin-top: 48px;
+    /* STATS */
+    .stats { display: flex; flex-direction: column; gap: 8px; width: 320px; }
+    .stat-row { display: flex; align-items: center; gap: 10px; }
+    .stat-label {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 5.5px; color: var(--muted);
+      text-transform: uppercase; width: 36px; flex-shrink: 0;
+    }
+    .stat-bar {
+      flex: 1; height: 5px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 3px; overflow: hidden;
+    }
+    .stat-fill {
+      height: 100%; background: var(--accent);
+      border-radius: 3px; width: 0%;
+      transition: width 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s,
+                  background 0.5s ease;
+    }
+    .stat-val {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 5.5px; color: var(--accent);
+      width: 24px; text-align: right; flex-shrink: 0;
+      transition: color 0.5s ease;
     }
 
-    @media (max-width: 900px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 480px) { .features-grid { grid-template-columns: 1fr; } }
+    /* PRICE + CTA */
+    .hud-footer { display: flex; align-items: center; gap: 20px; }
+    .hud-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px; letter-spacing: 0.04em; color: var(--text);
+    }
+    .hud-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--bg); background: var(--accent);
+      border: none; cursor: pointer;
+      padding: 10px 16px; border-radius: 2px;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.5s ease;
+      /* pixel border */
+      box-shadow:
+        2px 0 0 0 rgba(0,0,0,0.6),
+        -2px 0 0 0 rgba(255,255,255,0.15),
+        0 2px 0 0 rgba(0,0,0,0.6);
+    }
+    .hud-cta:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5),
+        2px 0 0 0 rgba(0,0,0,0.6),
+        -2px 0 0 0 rgba(255,255,255,0.15);
+    }
+    .hud-cta:active { transform: translateY(0) scale(0.98); }
 
-    .feature-item {
-      padding: 32px 24px;
-      border: 1px solid #444;
-      transition: border-color 0.2s;
+    /* ─── ARROWS ──────────────────────────────────────── */
+    .arena-arrow {
+      position: fixed; top: 50%; z-index: 40;
+      transform: translateY(-50%);
+      width: 60px; height: 60px; border-radius: 50%;
+      background: rgba(0,0,0,0.45); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--muted); font-size: 22px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; user-select: none;
+    }
+    .arena-arrow:hover { background: rgba(255,255,255,0.1); color: var(--text); transform: translateY(-50%) scale(1.08); }
+    .arena-arrow.left  { left: 28px; }
+    .arena-arrow.right { right: 28px; }
+
+    /* ─── SELECT LABEL ───────────────────────────────── */
+    .select-label {
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+      z-index: 40; text-align: center; pointer-events: none;
+    }
+    .select-label span {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--muted);
+      opacity: 0.6;
     }
 
-    .feature-item:hover { border-color: var(--yellow); }
-
-    .feature-icon {
-      font-size: 32px;
-      margin-bottom: 16px;
+    /* ─── DOTS ────────────────────────────────────────── */
+    .dots {
+      position: fixed; bottom: 175px; left: 50%; transform: translateX(-50%);
+      z-index: 40; display: flex; gap: 10px; align-items: center;
+    }
+    .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      cursor: pointer; transition: all 0.3s;
+    }
+    .dot.active {
+      background: var(--accent);
+      transform: scale(1.4);
+      box-shadow: 0 0 8px var(--accent);
     }
 
-    .feature-title {
-      font-family: var(--font-display);
-      font-size: 22px;
-      color: var(--white);
-      margin-bottom: 8px;
+    /* ─── KEYBOARD HINT ──────────────────────────────── */
+    .kb-hint {
+      position: fixed; bottom: 44px; left: 50%; transform: translateX(-50%);
+      z-index: 40; display: flex; align-items: center; gap: 8px; opacity: 0.3;
+      pointer-events: none;
     }
-
-    .feature-desc {
-      font-size: 14px;
-      line-height: 1.6;
-      color: #b0b0b0;
+    .key {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 18px;
+      border: 1px solid #444; border-radius: 3px;
+      font-size: 10px; color: var(--muted);
     }
+    .kb-hint span { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
 
-    /* ─── BANNER CTA ─── */
-    .cta-banner {
-      text-align: center;
-      padding: 100px 40px;
+    /* ─── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 16px 24px; justify-content: center; }
+      .nav-links, .nav-counter { display: none; }
+      .nav-logo img { transform: scale(1.95) translateY(45%); transform-origin: center center; }
+      .hud { width: 100%; border-radius: 0; border-right: none; padding: 20px 24px 28px; }
+      .hud-name { font-size: 36px; }
+      .coverflow-item img { height: 44vh; }
+      .arena-arrow { width: 44px; height: 44px; font-size: 16px; }
+      .arena-arrow.left  { left: 12px; }
+      .arena-arrow.right { right: 12px; }
     }
-
-    .cta-banner .section-title {
-      margin-bottom: 16px;
-    }
-
-    .cta-banner p {
-      font-size: 18px;
-      color: var(--muted);
-      margin-bottom: 40px;
-    }
-
-    .cta-price-block {
-      display: inline-flex;
-      align-items: baseline;
-      gap: 8px;
-      margin-bottom: 40px;
-    }
-
-    .cta-price-block .from {
-      font-size: 14px;
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    .cta-price-block .price {
-      font-family: var(--font-display);
-      font-size: 64px;
-      color: var(--black);
-      line-height: 1;
-    }
-
-    /* ─── FOOTER ─── */
-    footer {
-      background: var(--black);
-      padding: 48px 40px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 24px;
-      border-top: 2px solid var(--yellow);
-    }
-
-    .footer-logo img { height: 32px; }
-
-    .footer-info {
-      font-size: 13px;
-      color: #555;
-      line-height: 1.8;
-    }
-
-    .footer-info a {
-      color: var(--yellow);
-      text-decoration: none;
-    }
-
-    .footer-copy {
-      font-size: 12px;
-      color: #444;
-      text-align: right;
-    }
-
-    /* ─── HIDDEN ─── */
-    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header>
-    <a href="index.html" class="header-logo">
-      <img src="assets/images/logoocto.png" alt="Octo Control">
-    </a>
-    <nav>
-      <a href="#produtos">Produtos</a>
-      <a href="#sobre">Sobre</a>
-      <a href="#contato" class="btn-comprar">Comprar</a>
-    </nav>
-  </header>
+<!-- Fixed BG -->
+<div class="bg-layer"></div>
+<div class="bg-bloom" id="bgBloom"></div>
 
-  <!-- HERO -->
-  <section class="hero" style="background-image: url('assets/images/fundo-chevron.jpg'); background-size: cover; background-position: center;">
-    <div class="hero-content">
-      <p class="hero-eyebrow">Capas de Almofadas Nerd</p>
-      <h1 class="hero-title">LEVEL<br>UP<br><span>SEU QUARTO</span></h1>
-      <p class="hero-desc">
-        Estampas digitais exclusivas em tecido macio 100% poliéster.
-        Zíper invisível, cores vibrantes, anti-alérgico. 45 × 45 cm.
-      </p>
-      <div class="hero-cta">
-        <a href="#produtos" class="btn-primary">VER COLEÇÃO</a>
-        <a href="#sobre" class="btn-outline">Como funciona</a>
-      </div>
+<!-- Scanlines overlay -->
+<div class="scanlines"></div>
+
+<!-- Selection flash -->
+<div class="sel-flash" id="selFlash"></div>
+
+<!-- Loading -->
+<div class="loading-screen" id="loadingScreen">
+  <img class="loading-logo" src="assets/images/logoocto.png" alt="Octo Control">
+  <div class="loading-press">PRESS START</div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <img src="assets/images/logoocto.png" alt="Octo Control">
+  </a>
+</nav>
+
+
+<!-- Arena -->
+<div class="arena">
+  <div class="coverflow-area" id="coverflowArea">
+    <!-- items injected by JS -->
+  </div>
+</div>
+
+<!-- HUD Panel -->
+<div class="hud" id="hud">
+  <div class="hud-tag" id="hudTag"></div>
+  <div class="hud-name" id="hudName"></div>
+  <div class="hud-desc" id="hudDesc"></div>
+  <div class="stats">
+    <div class="stat-row">
+      <span class="stat-label">VIBE</span>
+      <div class="stat-bar"><div class="stat-fill" id="statVibe"></div></div>
+      <span class="stat-val" id="statVibeVal"></span>
     </div>
-
-    <div class="hero-image">
-      <img src="assets/images/hero.jpg" alt="Capas de Almofadas Octo Control">
+    <div class="stat-row">
+      <span class="stat-label">DROP</span>
+      <div class="stat-bar"><div class="stat-fill" id="statDrop"></div></div>
+      <span class="stat-val" id="statDropVal"></span>
     </div>
-
-    <div class="hero-badge">
-      <div class="badge-item">
-        <div class="badge-num">8</div>
-        <div class="badge-label">Estampas</div>
-      </div>
-      <div class="badge-item">
-        <div class="badge-num">45×45</div>
-        <div class="badge-label">Centímetros</div>
-      </div>
-      <div class="badge-item">
-        <div class="badge-num">100%</div>
-        <div class="badge-label">Poliéster</div>
-      </div>
+    <div class="stat-row">
+      <span class="stat-label">FEEL</span>
+      <div class="stat-bar"><div class="stat-fill" id="statFeel"></div></div>
+      <span class="stat-val" id="statFeelVal"></span>
     </div>
-  </section>
+  </div>
+</div>
 
-  <!-- PRODUTOS -->
-  <section id="produtos" style="background: var(--white);">
-    <div class="section-header">
-      <div>
-        <p class="section-eyebrow">Coleção completa</p>
-        <h2 class="section-title">TODAS AS<br>ESTAMPAS</h2>
-      </div>
-    </div>
+<!-- Navigation arrows -->
+<button class="arena-arrow left" id="arrowLeft">&#8592;</button>
+<button class="arena-arrow right" id="arrowRight">&#8594;</button>
 
-    <!-- Filtros -->
-    <div class="filters">
-      <button class="filter-btn active" data-filter="all">Todos</button>
-      <button class="filter-btn" data-filter="gaming">Gaming Retro</button>
-      <button class="filter-btn" data-filter="zelda">Zelda</button>
-      <button class="filter-btn" data-filter="cartoon">Cartoon</button>
-    </div>
+<!-- Dots -->
+<!-- Keyboard hint -->
+<div class="kb-hint">
+  <span class="key">&#8592;</span>
+  <span class="key">&#8594;</span>
+  <span>navegar</span>
+</div>
 
-    <!-- Grid -->
-    <div class="products-grid" id="products-grid">
+<script>
+const PRODUCTS = [
+  { id: 'snes_fever',          name: 'SNES Fever',         universe: 'Gaming Retro',          price: 'R$ 30,50', desc: 'A nostalgia do Super Nintendo\nnuma almofada que aquece\nqualquer sofá gamer.',           accent: '#E53935', vibe: 95, drop: 90, feel: 88 },
+  { id: 'power_up',            name: 'Power Up',           universe: 'Gaming Retro',          price: 'R$ 30,50', desc: 'Coletaste todos os itens.\nAgora é hora de colecionar\nesta.',                           accent: '#43A047', vibe: 88, drop: 82, feel: 85 },
+  { id: 'blazing_genesis',     name: 'Blazing Genesis',    universe: 'Gaming Retro',          price: 'R$ 30,50', desc: 'O legado do Mega Drive,\nreinterpretado com\natitude máxima.',                          accent: '#1E88E5', vibe: 85, drop: 80, feel: 85 },
+  { id: 'no_play_no_gain_xbox',name: 'No Play No Gain',    universe: 'Xbox',                  price: 'R$ 30,50', desc: 'Sem jogo não há ganho.\nPara os guerreiros do\ncontrolo verde.',                         accent: '#2E7D32', vibe: 92, drop: 88, feel: 85 },
+  { id: 'triforce',            name: 'Triforce',           universe: 'The Legend of Zelda',   price: 'R$ 30,50', desc: 'Coragem, Poder e Sabedoria\nreunidos na almofada mais\népica de Hyrule.',                 accent: '#F9A825', vibe: 98, drop: 95, feel: 88 },
+  { id: 'selfie',              name: 'Selfie',             universe: 'Adventure Time',        price: 'R$ 30,50', desc: 'Finn e Jake querem\naparecer no teu feed.\nHora de aventura.',                          accent: '#F5C400', vibe: 87, drop: 78, feel: 85 },
+  { id: 'poptime',             name: 'Poptime',            universe: 'Adventure Time',        price: 'R$ 30,50', desc: 'Pop, colorido e cheio de\npersonalidade — exatamente\ncomo o Land of Ooo.',              accent: '#E91E8C', vibe: 90, drop: 75, feel: 86 }
+];
 
-      <a href="produto.html?id=snes_fever" class="product-card" data-category="gaming">
-        <div class="card-image">
-          <img src="assets/images/produtos/snes_fever.png" alt="SNES Fever" loading="lazy">
-          <span class="card-tag">AL30</span>
-        </div>
-        <div class="card-body">
-          <p class="card-universe">Gaming Retro</p>
-          <h3 class="card-name">SNES Fever</h3>
-          <div class="card-footer">
-            <span class="card-price">R$ 30,50</span>
-            <div class="card-colors">
-              <span class="color-dot" style="background:#F5C400" title="Amarelo"></span>
-              <span class="color-dot" style="background:#6A1B9A" title="Roxo"></span>
-              <span class="color-dot" style="background:#CDDC39" title="Limão"></span>
-            </div>
-          </div>
-        </div>
-      </a>
+// ── DOM ──────────────────────────────────────────────
+const loadingScreen  = document.getElementById('loadingScreen');
+const bgBloom        = document.getElementById('bgBloom');
+const selFlash       = document.getElementById('selFlash');
+const coverflowArea  = document.getElementById('coverflowArea');
+const hud            = document.getElementById('hud');
+const hudTag         = document.getElementById('hudTag');
+const hudName        = document.getElementById('hudName');
+const hudDesc        = document.getElementById('hudDesc');
+const statVibe       = document.getElementById('statVibe');
+const statDrop       = document.getElementById('statDrop');
+const statFeel       = document.getElementById('statFeel');
+const statVibeVal    = document.getElementById('statVibeVal');
+const statDropVal    = document.getElementById('statDropVal');
+const statFeelVal    = document.getElementById('statFeelVal');
+const arrowLeft      = document.getElementById('arrowLeft');
+const arrowRight     = document.getElementById('arrowRight');
 
-      <a href="produto.html?id=power_up" class="product-card" data-category="gaming">
-        <div class="card-image">
-          <img src="assets/images/produtos/power_up.png" alt="Power Up" loading="lazy">
-          <span class="card-tag">AL31</span>
-        </div>
-        <div class="card-body">
-          <p class="card-universe">Gaming Retro</p>
-          <h3 class="card-name">Power Up</h3>
-          <div class="card-footer">
-            <span class="card-price">R$ 30,50</span>
-            <div class="card-colors">
-              <span class="color-dot" style="background:#00BCD4" title="Turquesa"></span>
-              <span class="color-dot" style="background:#616161" title="Cinza"></span>
-              <span class="color-dot" style="background:#7B1FA2" title="Vinho"></span>
-            </div>
-          </div>
-        </div>
-      </a>
+// ── State ─────────────────────────────────────────────
+let current = 0;
+let isAnimating = false;
 
-      <a href="produto.html?id=blazing_genesis" class="product-card" data-category="gaming">
-        <div class="card-image">
-          <img src="assets/images/produtos/blazing_genesis.png" alt="Blazing Genesis" loading="lazy">
-          <span class="card-tag">AL32</span>
-        </div>
-        <div class="card-body">
-          <p class="card-universe">Gaming Retro</p>
-          <h3 class="card-name">Blazing Genesis</h3>
-          <div class="card-footer">
-            <span class="card-price">R$ 30,50</span>
-            <div class="card-colors">
-              <span class="color-dot" style="background:#6A1B9A" title="Roxo"></span>
-              <span class="color-dot" style="background:#E91E8C" title="Rosa"></span>
-              <span class="color-dot" style="background:#1976D2" title="Azul"></span>
-            </div>
-          </div>
-        </div>
-      </a>
+// ── Build coverflow items ─────────────────────────────
+const items = [];
 
-      <a href="produto.html?id=no_play_no_gain_xbox" class="product-card" data-category="gaming">
-        <div class="card-image">
-          <img src="assets/images/produtos/no_play_no_gain_xbox.png" alt="No Play No Gain Xbox" loading="lazy">
-          <span class="card-tag">AL33</span>
-        </div>
-        <div class="card-body">
-          <p class="card-universe">Xbox</p>
-          <h3 class="card-name">No Play No Gain</h3>
-          <div class="card-footer">
-            <span class="card-price">R$ 30,50</span>
-            <div class="card-colors">
-              <span class="color-dot" style="background:#424242" title="Cinza"></span>
-              <span class="color-dot" style="background:#388E3C" title="Verde"></span>
-              <span class="color-dot" style="background:#6A1B9A" title="Roxo"></span>
-            </div>
-          </div>
-        </div>
-      </a>
+PRODUCTS.forEach((p, i) => {
+  const el = document.createElement('div');
+  el.className = 'coverflow-item';
+  el.dataset.index = i;
+  el.innerHTML = `<img src="assets/images/produtos/${p.id}.png?v=2" alt="${p.name}" loading="lazy">`;
+  el.addEventListener('click', () => { if (i !== current) goTo(i); });
+  coverflowArea.appendChild(el);
+  items.push(el);
+});
 
-      <a href="produto.html?id=no_play_no_gain_ps4" class="product-card" data-category="gaming">
-        <div class="card-image">
-          <img src="assets/images/produtos/no_play_no_gain_ps4.png" alt="No Play No Gain PS4" loading="lazy">
-          <span class="card-tag">AL34</span>
-        </div>
-        <div class="card-body">
-          <p class="card-universe">PlayStation</p>
-          <h3 class="card-name">No Play No Gain</h3>
-          <div class="card-footer">
-            <span class="card-price">R$ 30,50</span>
-            <div class="card-colors">
-              <span class="color-dot" style="background:#212121" title="Chumbo"></span>
-              <span class="color-dot" style="background:#0288D1" title="Azul"></span>
-              <span class="color-dot" style="background:#6A1B9A" title="Roxo"></span>
-            </div>
-          </div>
-        </div>
-      </a>
 
-      <a href="produto.html?id=triforce" class="product-card" data-category="zelda">
-        <div class="card-image">
-          <img src="assets/images/produtos/triforce.png" alt="Triforce" loading="lazy">
-          <span class="card-tag">AL35</span>
-        </div>
-        <div class="card-body">
-          <p class="card-universe">Zelda</p>
-          <h3 class="card-name">Triforce</h3>
-          <div class="card-footer">
-            <span class="card-price">R$ 30,50</span>
-            <div class="card-colors">
-              <span class="color-dot" style="background:#388E3C" title="Verde"></span>
-              <span class="color-dot" style="background:#B71C1C" title="Vermelho"></span>
-              <span class="color-dot" style="background:#1976D2" title="Azul"></span>
-            </div>
-          </div>
-        </div>
-      </a>
+// ── Coverflow transform logic ─────────────────────────
+function getTransformParams(offset) {
+  const abs = Math.abs(offset);
+  const sign = Math.sign(offset) || 1;
+  const spacing = 22; // vw per step
 
-      <a href="produto.html?id=selfie" class="product-card" data-category="cartoon">
-        <div class="card-image">
-          <img src="assets/images/produtos/selfie.png" alt="Selfie" loading="lazy">
-          <span class="card-tag">AL36</span>
-        </div>
-        <div class="card-body">
-          <p class="card-universe">Adventure Time</p>
-          <h3 class="card-name">Selfie</h3>
-          <div class="card-footer">
-            <span class="card-price">R$ 30,50</span>
-            <div class="card-colors">
-              <span class="color-dot" style="background:#F5C400" title="Amarelo / Jake"></span>
-              <span class="color-dot" style="background:#1A237E" title="Azul escuro"></span>
-            </div>
-          </div>
-        </div>
-      </a>
+  if (abs === 0) return { x: 0,              rotY: 0,            scale: 1.15, z: 20, opacity: 1,    bright: 1 };
+  if (abs === 1) return { x: sign * spacing * 1,  rotY: -sign * 26,   scale: 0.78, z: 16, opacity: 0.88, bright: 0.75 };
+  if (abs === 2) return { x: sign * spacing * 1.9, rotY: -sign * 42,   scale: 0.6,  z: 12, opacity: 0.65, bright: 0.55 };
+  if (abs === 3) return { x: sign * spacing * 2.6, rotY: -sign * 52,   scale: 0.46, z: 8,  opacity: 0.4,  bright: 0.4 };
+  return               { x: sign * spacing * 3.2, rotY: -sign * 58,   scale: 0.35, z: 4,  opacity: 0.18, bright: 0.3 };
+}
 
-      <a href="produto.html?id=poptime" class="product-card" data-category="cartoon">
-        <div class="card-image">
-          <img src="assets/images/produtos/poptime.png" alt="Poptime" loading="lazy">
-          <span class="card-tag">AL37</span>
-        </div>
-        <div class="card-body">
-          <p class="card-universe">Adventure Time</p>
-          <h3 class="card-name">Poptime</h3>
-          <div class="card-footer">
-            <span class="card-price">R$ 30,50</span>
-            <div class="card-colors">
-              <span class="color-dot" style="background:#F5C400" title="Amarelo"></span>
-              <span class="color-dot" style="background:#E91E8C" title="Rosa"></span>
-              <span class="color-dot" style="background:#00BCD4" title="Turquesa"></span>
-            </div>
-          </div>
-        </div>
-      </a>
+function updateCarousel(animated = true) {
+  const p = PRODUCTS[current];
 
-    </div>
-  </section>
+  // Update CSS accent var
+  document.documentElement.style.setProperty('--accent', p.accent);
 
-  <!-- FEATURES -->
-  <section class="features" id="sobre" style="background-image: url('assets/images/fundo-chevron.jpg'); background-size: cover; background-position: center;">
-    <div class="section-header">
-      <div>
-        <p class="section-eyebrow">Por que Octo Control</p>
-        <h2 class="section-title light">QUALIDADE<br>NERD</h2>
-      </div>
-    </div>
-    <div class="features-grid">
-      <div class="feature-item">
-        <div class="feature-icon">🎮</div>
-        <h3 class="feature-title">Estampas Exclusivas</h3>
-        <p class="feature-desc">Designs criados especialmente para quem respira cultura nerd, games e pop.</p>
-      </div>
-      <div class="feature-item">
-        <div class="feature-icon">✨</div>
-        <h3 class="feature-title">Alta Qualidade</h3>
-        <p class="feature-desc">Impressão digital com cores vibrantes, tecido macio 100% poliéster anti-alérgico.</p>
-      </div>
-      <div class="feature-item">
-        <div class="feature-icon">📐</div>
-        <h3 class="feature-title">45 × 45 cm</h3>
-        <p class="feature-desc">Tamanho padrão com zíper invisível. Capa avulsa — o enchimento é opcional.</p>
-      </div>
-      <div class="feature-item">
-        <div class="feature-icon">🚀</div>
-        <h3 class="feature-title">Personalizável</h3>
-        <p class="feature-desc">Escolhe a tua cor favorita. Peça a partir de 15 unidades para preço especial.</p>
-      </div>
-    </div>
-  </section>
+  // Update bloom
+  bgBloom.style.background = `radial-gradient(ellipse at center, ${p.accent} 0%, transparent 65%)`;
+  bgBloom.style.opacity = '0.06';
 
-  <!-- CTA BANNER -->
-  <section class="cta-banner" id="contato">
-    <p class="section-eyebrow">Faz o teu pedido</p>
-    <h2 class="section-title">PRESS START<br>PARA COMPRAR</h2>
-    <br>
-    <div class="cta-price-block">
-      <span class="from">a partir de</span>
-      <span class="price">R$ 30,50</span>
-    </div>
-    <br>
-    <p>Envia uma mensagem com a estampa e a cor desejada</p>
-    <br><br>
-    <a href="mailto:contato@gustavogoncalves.me" class="btn-primary">ENTRAR EM CONTATO</a>
-  </section>
+  // Update counter
 
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-logo">
-      <img src="assets/images/logoocto.png" alt="Octo Control">
-    </div>
-    <div class="footer-info">
-      OCTO CONTROL SERVIÇOS GRÁFICOS<br>
-      CNPJ: 22.230.256/0001<br>
-      <a href="mailto:contato@gustavogoncalves.me">contato@gustavogoncalves.me</a>
-    </div>
-    <div class="footer-copy">
-      © 2015 Octo Control<br>
-      Todos os direitos reservados
-    </div>
-  </footer>
+  // Position all items
+  items.forEach((el, i) => {
+    const offset = i - current;
+    const t = getTransformParams(offset);
+    const isActive = offset === 0;
 
-  <script>
-    // ── Filtro de categorias ──
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const cards = document.querySelectorAll('.product-card');
+    el.style.transition = animated ? `transform var(--tr), opacity var(--tr), filter var(--tr)` : 'none';
+    el.style.transform = `translateX(calc(-50% + ${t.x}vw)) translateY(-52%) rotateY(${t.rotY}deg) scale(${t.scale})`;
+    el.style.zIndex = t.z;
+    el.style.opacity = t.opacity;
+    el.style.filter = `brightness(${t.bright}) drop-shadow(0 24px 60px rgba(0,0,0,0.85))`;
+    el.style.cursor = isActive ? 'default' : 'pointer';
 
-    filterBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        filterBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+    if (isActive) {
+      el.classList.add('active');
+      // Active glow color
+      el.style.setProperty('--accent', p.accent);
+    } else {
+      el.classList.remove('active');
+    }
+  });
 
-        const filter = btn.dataset.filter;
-        cards.forEach(card => {
-          if (filter === 'all' || card.dataset.category === filter) {
-            card.classList.remove('hidden');
-          } else {
-            card.classList.add('hidden');
-          }
-        });
+}
+
+function updateHUD(animated = true) {
+  const p = PRODUCTS[current];
+
+  const doUpdate = () => {
+    hudTag.textContent = p.universe;
+    hudName.textContent = p.name;
+    hudDesc.textContent = p.desc;
+    // Reset stat bars before animating
+    statVibe.style.width = '0%';
+    statDrop.style.width = '0%';
+    statFeel.style.width = '0%';
+    statVibeVal.textContent = '';
+    statDropVal.textContent = '';
+    statFeelVal.textContent = '';
+
+    // Animate stat fills after tiny delay
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        statVibe.style.width = p.vibe + '%';
+        statDrop.style.width = p.drop + '%';
+        statFeel.style.width = p.feel + '%';
+        statVibeVal.textContent = p.vibe;
+        statDropVal.textContent = p.drop;
+        statFeelVal.textContent = p.feel;
+        statVibe.style.background = p.accent;
+        statDrop.style.background = p.accent;
+        statFeel.style.background = p.accent;
+        statVibeVal.style.color = p.accent;
+        statDropVal.style.color = p.accent;
+        statFeelVal.style.color = p.accent;
       });
     });
 
-    // ── Header scroll effect ──
-    const header = document.querySelector('header');
-    window.addEventListener('scroll', () => {
-      header.style.borderBottomColor = window.scrollY > 60 ? '#F5A700' : '#F5A700';
-    });
-  </script>
+    hud.classList.remove('exiting');
+    hud.classList.add('entering');
+  };
+
+  doUpdate();
+}
+
+function goTo(idx, animate = true) {
+  if (idx === current || isAnimating) return;
+  isAnimating = true;
+  current = ((idx % PRODUCTS.length) + PRODUCTS.length) % PRODUCTS.length;
+  updateCarousel(animate);
+  updateHUD(animate);
+  setTimeout(() => { isAnimating = false; }, 600);
+}
+
+function prev() { goTo((current - 1 + PRODUCTS.length) % PRODUCTS.length); }
+function next() { goTo((current + 1) % PRODUCTS.length); }
+
+// ── Navigation ────────────────────────────────────────
+arrowLeft.addEventListener('click', prev);
+arrowRight.addEventListener('click', next);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  prev();
+  if (e.key === 'ArrowRight') next();
+});
+
+// Touch swipe
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) diff > 0 ? next() : prev();
+});
+
+// ── Loading & init ────────────────────────────────────
+// Lock body during loading
+document.body.style.pointerEvents = 'none';
+
+// Initial state (no animation)
+updateCarousel(false);
+updateHUD(false);
+
+setTimeout(() => {
+  loadingScreen.classList.add('fade-out');
+  setTimeout(() => {
+    loadingScreen.style.display = 'none';
+    document.body.style.pointerEvents = '';
+  }, 600);
+}, 3000);
+</script>
 </body>
 </html>
