@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Octo Control — Capas de Almofadas Nerd</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ─── RESET & BASE ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #1a1a1a;
+      --yellow:  #F5A700;
+      --white:   #ffffff;
+      --gray:    #2e2e2e;
+      --light:   #f5f5f0;
+      --muted:   #888;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body:    'Space Grotesk', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--white);
+      color: var(--black);
+      overflow-x: hidden;
+    }
+
+    /* ─── CHEVRON PATTERN ─── */
+    .bg-chevron {
+      background-color: var(--black);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40'%3E%3Cpolyline points='0,20 40,0 80,20' fill='none' stroke='%23272727' stroke-width='18'/%3E%3Cpolyline points='0,40 40,20 80,40' fill='none' stroke='%23272727' stroke-width='18'/%3E%3C/svg%3E");
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(26,26,26,0.96);
+      backdrop-filter: blur(8px);
+    }
+
+    .header-logo img {
+      height: 61px;
+      display: block;
+      transform: translateY(25%);
+    }
+
+    nav {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    nav a {
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--white);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--yellow); }
+
+    .btn-comprar {
+      background: var(--yellow);
+      color: var(--black) !important;
+      padding: 8px 20px;
+      border-radius: 2px;
+      font-weight: 700 !important;
+    }
+
+    .btn-comprar:hover {
+      background: #ffc107 !important;
+      color: var(--black) !important;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 100px 40px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 560px;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 16px;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(56px, 8vw, 100px);
+      line-height: 0.95;
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+
+    .hero-title span { color: var(--yellow); }
+
+    .hero-desc {
+      font-size: 16px;
+      line-height: 1.7;
+      color: #aaa;
+      margin-bottom: 36px;
+      max-width: 420px;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      background: var(--yellow);
+      color: var(--black);
+      font-family: var(--font-display);
+      font-size: 20px;
+      letter-spacing: 0.05em;
+      padding: 14px 36px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: #ffc107;
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      display: inline-block;
+      border: 2px solid #444;
+      color: #aaa;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 28px;
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-outline:hover { border-color: var(--yellow); color: var(--yellow); }
+
+    .hero-image {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 58%;
+      overflow: hidden;
+    }
+
+    @media (max-width: 768px) {
+      .hero-image { display: none; }
+      nav a:not(.btn-comprar) { display: none; }
+    }
+
+    .hero-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+    }
+
+    .hero-image::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, var(--black) 0%, transparent 40%);
+      z-index: 1;
+    }
+
+    .hero-badge {
+      position: absolute;
+      bottom: 40px;
+      left: 40px;
+      display: flex;
+      gap: 32px;
+    }
+
+    .badge-item {
+      text-align: center;
+    }
+
+    .badge-num {
+      font-family: var(--font-display);
+      font-size: 36px;
+      color: var(--yellow);
+      line-height: 1;
+    }
+
+    .badge-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #666;
+    }
+
+    /* ─── SECTION SHARED ─── */
+    section { padding: 80px 40px; }
+
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .section-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 5vw, 60px);
+      line-height: 1;
+      color: var(--black);
+    }
+
+    .section-title.light { color: var(--white); }
+
+    /* ─── FILTROS ─── */
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .filter-btn {
+      background: none;
+      border: 2px solid #ddd;
+      padding: 8px 20px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #555;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--yellow);
+      border-color: var(--yellow);
+      color: var(--black);
+    }
+
+    /* ─── GRID DE PRODUTOS ─── */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    @media (max-width: 1100px) { .products-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 800px)  { .products-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px)  { .products-grid { grid-template-columns: 1fr; } }
+
+    .product-card {
+      cursor: pointer;
+      position: relative;
+      background: var(--light);
+      transition: transform 0.25s, box-shadow 0.25s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .product-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    .card-image {
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform 0.4s;
+    }
+
+    .product-card:hover .card-image img {
+      transform: scale(1.05);
+    }
+
+    .card-tag {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: var(--yellow);
+      color: var(--black);
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+    }
+
+    .card-body {
+      padding: 16px 16px 20px;
+    }
+
+    .card-universe {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .card-name {
+      font-family: var(--font-display);
+      font-size: 22px;
+      line-height: 1.1;
+      color: var(--black);
+      margin-bottom: 12px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-price {
+      font-family: var(--font-display);
+      font-size: 24px;
+      color: var(--black);
+    }
+
+    .card-colors {
+      display: flex;
+      gap: 6px;
+    }
+
+    .color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,0,0,0.1);
+    }
+
+    /* ─── FEATURES ─── */
+    .features {
+      background: var(--black);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      margin-top: 48px;
+    }
+
+    @media (max-width: 900px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .features-grid { grid-template-columns: 1fr; } }
+
+    .feature-item {
+      padding: 32px 24px;
+      border: 1px solid #444;
+      transition: border-color 0.2s;
+    }
+
+    .feature-item:hover { border-color: var(--yellow); }
+
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+
+    .feature-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #b0b0b0;
+    }
+
+    /* ─── BANNER CTA ─── */
+    .cta-banner {
+      text-align: center;
+      padding: 100px 40px;
+    }
+
+    .cta-banner .section-title {
+      margin-bottom: 16px;
+    }
+
+    .cta-banner p {
+      font-size: 18px;
+      color: var(--muted);
+      margin-bottom: 40px;
+    }
+
+    .cta-price-block {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 40px;
+    }
+
+    .cta-price-block .from {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .cta-price-block .price {
+      font-family: var(--font-display);
+      font-size: 64px;
+      color: var(--black);
+      line-height: 1;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--black);
+      padding: 48px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+      border-top: 2px solid var(--yellow);
+    }
+
+    .footer-logo img { height: 32px; }
+
+    .footer-info {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    .footer-info a {
+      color: var(--yellow);
+      text-decoration: none;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: #444;
+      text-align: right;
+    }
+
+    /* ─── HIDDEN ─── */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <a href="index.html" class="header-logo">
+      <img src="assets/images/logoocto.png" alt="Octo Control">
+    </a>
+    <nav>
+      <a href="#produtos">Produtos</a>
+      <a href="#sobre">Sobre</a>
+      <a href="#contato" class="btn-comprar">Comprar</a>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" style="background-image: url('assets/images/fundo-chevron.jpg'); background-size: cover; background-position: center;">
+    <div class="hero-content">
+      <p class="hero-eyebrow">Capas de Almofadas Nerd</p>
+      <h1 class="hero-title">LEVEL<br>UP<br><span>SEU QUARTO</span></h1>
+      <p class="hero-desc">
+        Estampas digitais exclusivas em tecido macio 100% poliéster.
+        Zíper invisível, cores vibrantes, anti-alérgico. 45 × 45 cm.
+      </p>
+      <div class="hero-cta">
+        <a href="#produtos" class="btn-primary">VER COLEÇÃO</a>
+        <a href="#sobre" class="btn-outline">Como funciona</a>
+      </div>
+    </div>
+
+    <div class="hero-image">
+      <img src="assets/images/hero.jpg" alt="Capas de Almofadas Octo Control">
+    </div>
+
+    <div class="hero-badge">
+      <div class="badge-item">
+        <div class="badge-num">8</div>
+        <div class="badge-label">Estampas</div>
+      </div>
+      <div class="badge-item">
+        <div class="badge-num">45×45</div>
+        <div class="badge-label">Centímetros</div>
+      </div>
+      <div class="badge-item">
+        <div class="badge-num">100%</div>
+        <div class="badge-label">Poliéster</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUTOS -->
+  <section id="produtos" style="background: var(--white);">
+    <div class="section-header">
+      <div>
+        <p class="section-eyebrow">Coleção completa</p>
+        <h2 class="section-title">TODAS AS<br>ESTAMPAS</h2>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">Todos</button>
+      <button class="filter-btn" data-filter="gaming">Gaming Retro</button>
+      <button class="filter-btn" data-filter="zelda">Zelda</button>
+      <button class="filter-btn" data-filter="cartoon">Cartoon</button>
+    </div>
+
+    <!-- Grid -->
+    <div class="products-grid" id="products-grid">
+
+      <a href="produto.html?id=snes_fever" class="product-card" data-category="gaming">
+        <div class="card-image">
+          <img src="assets/images/produtos/snes_fever.png" alt="SNES Fever" loading="lazy">
+          <span class="card-tag">AL30</span>
+        </div>
+        <div class="card-body">
+          <p class="card-universe">Gaming Retro</p>
+          <h3 class="card-name">SNES Fever</h3>
+          <div class="card-footer">
+            <span class="card-price">R$ 30,50</span>
+            <div class="card-colors">
+              <span class="color-dot" style="background:#F5C400" title="Amarelo"></span>
+              <span class="color-dot" style="background:#6A1B9A" title="Roxo"></span>
+              <span class="color-dot" style="background:#CDDC39" title="Limão"></span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <a href="produto.html?id=power_up" class="product-card" data-category="gaming">
+        <div class="card-image">
+          <img src="assets/images/produtos/power_up.png" alt="Power Up" loading="lazy">
+          <span class="card-tag">AL31</span>
+        </div>
+        <div class="card-body">
+          <p class="card-universe">Gaming Retro</p>
+          <h3 class="card-name">Power Up</h3>
+          <div class="card-footer">
+            <span class="card-price">R$ 30,50</span>
+            <div class="card-colors">
+              <span class="color-dot" style="background:#00BCD4" title="Turquesa"></span>
+              <span class="color-dot" style="background:#616161" title="Cinza"></span>
+              <span class="color-dot" style="background:#7B1FA2" title="Vinho"></span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <a href="produto.html?id=blazing_genesis" class="product-card" data-category="gaming">
+        <div class="card-image">
+          <img src="assets/images/produtos/blazing_genesis.png" alt="Blazing Genesis" loading="lazy">
+          <span class="card-tag">AL32</span>
+        </div>
+        <div class="card-body">
+          <p class="card-universe">Gaming Retro</p>
+          <h3 class="card-name">Blazing Genesis</h3>
+          <div class="card-footer">
+            <span class="card-price">R$ 30,50</span>
+            <div class="card-colors">
+              <span class="color-dot" style="background:#6A1B9A" title="Roxo"></span>
+              <span class="color-dot" style="background:#E91E8C" title="Rosa"></span>
+              <span class="color-dot" style="background:#1976D2" title="Azul"></span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <a href="produto.html?id=no_play_no_gain_xbox" class="product-card" data-category="gaming">
+        <div class="card-image">
+          <img src="assets/images/produtos/no_play_no_gain_xbox.png" alt="No Play No Gain Xbox" loading="lazy">
+          <span class="card-tag">AL33</span>
+        </div>
+        <div class="card-body">
+          <p class="card-universe">Xbox</p>
+          <h3 class="card-name">No Play No Gain</h3>
+          <div class="card-footer">
+            <span class="card-price">R$ 30,50</span>
+            <div class="card-colors">
+              <span class="color-dot" style="background:#424242" title="Cinza"></span>
+              <span class="color-dot" style="background:#388E3C" title="Verde"></span>
+              <span class="color-dot" style="background:#6A1B9A" title="Roxo"></span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <a href="produto.html?id=no_play_no_gain_ps4" class="product-card" data-category="gaming">
+        <div class="card-image">
+          <img src="assets/images/produtos/no_play_no_gain_ps4.png" alt="No Play No Gain PS4" loading="lazy">
+          <span class="card-tag">AL34</span>
+        </div>
+        <div class="card-body">
+          <p class="card-universe">PlayStation</p>
+          <h3 class="card-name">No Play No Gain</h3>
+          <div class="card-footer">
+            <span class="card-price">R$ 30,50</span>
+            <div class="card-colors">
+              <span class="color-dot" style="background:#212121" title="Chumbo"></span>
+              <span class="color-dot" style="background:#0288D1" title="Azul"></span>
+              <span class="color-dot" style="background:#6A1B9A" title="Roxo"></span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <a href="produto.html?id=triforce" class="product-card" data-category="zelda">
+        <div class="card-image">
+          <img src="assets/images/produtos/triforce.png" alt="Triforce" loading="lazy">
+          <span class="card-tag">AL35</span>
+        </div>
+        <div class="card-body">
+          <p class="card-universe">Zelda</p>
+          <h3 class="card-name">Triforce</h3>
+          <div class="card-footer">
+            <span class="card-price">R$ 30,50</span>
+            <div class="card-colors">
+              <span class="color-dot" style="background:#388E3C" title="Verde"></span>
+              <span class="color-dot" style="background:#B71C1C" title="Vermelho"></span>
+              <span class="color-dot" style="background:#1976D2" title="Azul"></span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <a href="produto.html?id=selfie" class="product-card" data-category="cartoon">
+        <div class="card-image">
+          <img src="assets/images/produtos/selfie.png" alt="Selfie" loading="lazy">
+          <span class="card-tag">AL36</span>
+        </div>
+        <div class="card-body">
+          <p class="card-universe">Adventure Time</p>
+          <h3 class="card-name">Selfie</h3>
+          <div class="card-footer">
+            <span class="card-price">R$ 30,50</span>
+            <div class="card-colors">
+              <span class="color-dot" style="background:#F5C400" title="Amarelo / Jake"></span>
+              <span class="color-dot" style="background:#1A237E" title="Azul escuro"></span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <a href="produto.html?id=poptime" class="product-card" data-category="cartoon">
+        <div class="card-image">
+          <img src="assets/images/produtos/poptime.png" alt="Poptime" loading="lazy">
+          <span class="card-tag">AL37</span>
+        </div>
+        <div class="card-body">
+          <p class="card-universe">Adventure Time</p>
+          <h3 class="card-name">Poptime</h3>
+          <div class="card-footer">
+            <span class="card-price">R$ 30,50</span>
+            <div class="card-colors">
+              <span class="color-dot" style="background:#F5C400" title="Amarelo"></span>
+              <span class="color-dot" style="background:#E91E8C" title="Rosa"></span>
+              <span class="color-dot" style="background:#00BCD4" title="Turquesa"></span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="sobre" style="background-image: url('assets/images/fundo-chevron.jpg'); background-size: cover; background-position: center;">
+    <div class="section-header">
+      <div>
+        <p class="section-eyebrow">Por que Octo Control</p>
+        <h2 class="section-title light">QUALIDADE<br>NERD</h2>
+      </div>
+    </div>
+    <div class="features-grid">
+      <div class="feature-item">
+        <div class="feature-icon">🎮</div>
+        <h3 class="feature-title">Estampas Exclusivas</h3>
+        <p class="feature-desc">Designs criados especialmente para quem respira cultura nerd, games e pop.</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">✨</div>
+        <h3 class="feature-title">Alta Qualidade</h3>
+        <p class="feature-desc">Impressão digital com cores vibrantes, tecido macio 100% poliéster anti-alérgico.</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">📐</div>
+        <h3 class="feature-title">45 × 45 cm</h3>
+        <p class="feature-desc">Tamanho padrão com zíper invisível. Capa avulsa — o enchimento é opcional.</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🚀</div>
+        <h3 class="feature-title">Personalizável</h3>
+        <p class="feature-desc">Escolhe a tua cor favorita. Peça a partir de 15 unidades para preço especial.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <section class="cta-banner" id="contato">
+    <p class="section-eyebrow">Faz o teu pedido</p>
+    <h2 class="section-title">PRESS START<br>PARA COMPRAR</h2>
+    <br>
+    <div class="cta-price-block">
+      <span class="from">a partir de</span>
+      <span class="price">R$ 30,50</span>
+    </div>
+    <br>
+    <p>Envia uma mensagem com a estampa e a cor desejada</p>
+    <br><br>
+    <a href="mailto:contato@gustavogoncalves.me" class="btn-primary">ENTRAR EM CONTATO</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">
+      <img src="assets/images/logoocto.png" alt="Octo Control">
+    </div>
+    <div class="footer-info">
+      OCTO CONTROL SERVIÇOS GRÁFICOS<br>
+      CNPJ: 22.230.256/0001<br>
+      <a href="mailto:contato@gustavogoncalves.me">contato@gustavogoncalves.me</a>
+    </div>
+    <div class="footer-copy">
+      © 2015 Octo Control<br>
+      Todos os direitos reservados
+    </div>
+  </footer>
+
+  <script>
+    // ── Filtro de categorias ──
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.product-card');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.dataset.filter;
+        cards.forEach(card => {
+          if (filter === 'all' || card.dataset.category === filter) {
+            card.classList.remove('hidden');
+          } else {
+            card.classList.add('hidden');
+          }
+        });
+      });
+    });
+
+    // ── Header scroll effect ──
+    const header = document.querySelector('header');
+    window.addEventListener('scroll', () => {
+      header.style.borderBottomColor = window.scrollY > 60 ? '#F5A700' : '#F5A700';
+    });
+  </script>
+</body>
+</html>

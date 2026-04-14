@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  <title>Octo Control — Almofadas Nerd</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --accent: #F9A825;
+      --bg: #0a0a0a;
+      --text: #f0f0f0;
+      --muted: #9a9895;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* ─── FIXED BG ──────────────────────────────────── */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      background-image: url('assets/images/fundo-chevron.jpg');
+      background-size: cover;
+      background-position: center top;
+      z-index: 0;
+      animation: bgScroll 18s linear infinite;
+    }
+    @keyframes bgScroll {
+      0%   { background-position: center 0%; }
+      100% { background-position: center 100%; }
+    }
+    .bg-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.25);
+      z-index: 1;
+    }
+    .bg-bloom {
+      position: fixed;
+      right: -5%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 55%;
+      height: 80%;
+      background: radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%);
+      opacity: 0;
+      z-index: 2;
+      pointer-events: none;
+      transition: background 0.8s ease, opacity 0.8s ease;
+      filter: blur(40px);
+    }
+
+    /* ─── LOADING SCREEN ───────────────────────────── */
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: url('assets/images/fundo-chevron.jpg');
+      background-size: cover;
+      background-position: center top;
+      animation: bgScroll 18s linear infinite;
+    }
+    .loading-screen::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+    }
+    .loading-logo {
+      position: relative;
+      z-index: 1;
+      height: 80px;
+      animation: logoPulse 0.9s ease-in-out infinite;
+    }
+    @keyframes logoPulse {
+      0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 0px  rgba(249,168,37,0)); }
+      50%       { transform: scale(1.14); filter: drop-shadow(0 0 28px rgba(249,168,37,0.55)); }
+    }
+    .loading-screen.fade-out {
+      animation: loadingFade 0.55s ease forwards !important;
+    }
+    @keyframes loadingFade {
+      to { opacity: 0; pointer-events: none; }
+    }
+
+    /* ─── FIXED NAV ─────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 52px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+      overflow: visible;
+    }
+    .nav-logo {
+      overflow: visible;
+      position: relative;
+      z-index: 55;
+      transition: opacity 0.35s ease;
+    }
+    .nav-logo img {
+      height: 36px;
+      display: block;
+      transform: scale(2.1) translateY(45%);
+      transform-origin: left center;
+    }
+    .nav-logo.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-counter {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: #444;
+      font-weight: 500;
+      transition: opacity 0.3s;
+    }
+    .nav-counter span { color: var(--accent); }
+    .nav-counter.hidden { opacity: 0; pointer-events: none; }
+
+    /* ─── PAGE WRAPPER ──────────────────────────────── */
+    .page-wrapper {
+      height: 100%;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      position: relative;
+      z-index: 5;
+    }
+    .page-wrapper::-webkit-scrollbar { display: none; }
+    .page-wrapper.locked {
+      overflow-y: hidden;
+    }
+
+    /* ─── SCREENS ───────────────────────────────────── */
+    .screen {
+      height: 100vh;
+      scroll-snap-align: start;
+      position: relative;
+    }
+
+    /* ══════════════════════════════════════════════════
+       SCREEN 1 — SELECTOR
+    ══════════════════════════════════════════════════ */
+    .selector-screen {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Content area — fills space above pillows */
+    .selector-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 160px 15% 0;
+      z-index: 20;
+      gap: 0;
+    }
+
+    /* Selector logo (above headline) */
+    .selector-logo {
+      display: block;
+      height: 113px;
+      margin: 0 auto 18px;
+      filter: drop-shadow(0 4px 24px rgba(0,0,0,0.5));
+      pointer-events: none;
+    }
+
+    /* Headline */
+    .selector-headline {
+      text-align: center;
+      pointer-events: none;
+    }
+    .selector-headline h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 7.5vw, 108px);
+      line-height: 0.88;
+      color: var(--text);
+      letter-spacing: 0.01em;
+      text-shadow: 0 4px 32px rgba(0,0,0,0.6);
+    }
+    .selector-headline h1 em {
+      color: #FFD600;
+      font-style: normal;
+    }
+    .selector-subline {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      line-height: 2.1;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      margin-top: 18px;
+      text-align: center;
+    }
+
+    /* Scroll hint */
+    .scroll-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      opacity: 0.45;
+      margin-top: 24px;
+      animation: hintFloat 2.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes hintFloat {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(8px); }
+    }
+    .scroll-hint-label {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .scroll-hint-arrow {
+      font-size: 22px;
+      color: var(--muted);
+      line-height: 1;
+    }
+
+    /* Pillows scattered area */
+    .selector-footer {
+      position: relative;
+      width: 100%;
+      height: 52vh;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    /* Individual pillow in selector */
+    .sel-pillow {
+      position: absolute;
+      bottom: -73px;
+      cursor: pointer;
+      transform-origin: bottom center;
+      transition: filter 0.25s;
+      z-index: 10;
+    }
+    .sel-pillow img {
+      display: block;
+      height: 52vh;
+      width: auto;
+      transition: height 0s;
+      object-fit: contain;
+      filter: drop-shadow(0 16px 32px rgba(0,0,0,0.75));
+      pointer-events: none;
+      user-select: none;
+      transition: filter 0.25s;
+    }
+    .sel-pillow:hover img {
+      filter: drop-shadow(0 22px 40px rgba(0,0,0,0.9)) brightness(1.08);
+    }
+    /* Edge pillows 75% bigger, tapering toward center */
+    .sel-pillow[data-index="0"] img,
+    .sel-pillow[data-index="5"] img { height: 91vh; }
+    .sel-pillow[data-index="1"] img,
+    .sel-pillow[data-index="4"] img { height: 70vh; }
+    .sel-pillow[data-index="2"] img,
+    .sel-pillow[data-index="3"] img { height: 52vh; }
+
+    /* Bounce on hover — JS adds/removes .bouncing */
+    .sel-pillow.bouncing {
+      animation: pillowBounce 0.48s cubic-bezier(0.36,0.07,0.19,0.97) forwards;
+    }
+    @keyframes pillowBounce {
+      0%   { transform: var(--bt, rotate(0deg)) translateY(0);    }
+      22%  { transform: var(--bt, rotate(0deg)) translateY(-22px); }
+      44%  { transform: var(--bt, rotate(0deg)) translateY(-4px);  }
+      66%  { transform: var(--bt, rotate(0deg)) translateY(-14px); }
+      82%  { transform: var(--bt, rotate(0deg)) translateY(-2px);  }
+      100% { transform: var(--bt, rotate(0deg)) translateY(0);    }
+    }
+
+    /* ══════════════════════════════════════════════════
+       SCREEN 2 — STAGE
+    ══════════════════════════════════════════════════ */
+    .stage-screen {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── MAIN STAGE ────────────────────────────────── */
+    .stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+      padding: 80px 8% 32px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* ─── INFO PANEL ────────────────────────────────── */
+    .info-panel {
+      width: 44%;
+      padding-right: 48px;
+      padding-left: 8%;
+      flex-shrink: 0;
+    }
+    .info-inner > * { opacity: 1; transform: none; }
+
+    .product-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+    .product-tag::before {
+      content: '';
+      width: 28px;
+      height: 1px;
+      background: var(--accent);
+      display: block;
+    }
+    .product-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(60px, 7.5vw, 112px);
+      line-height: 0.88;
+      color: var(--text);
+      margin-bottom: 24px;
+      letter-spacing: 0.01em;
+    }
+    .product-desc {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      line-height: 2.134;
+      color: var(--muted);
+      margin-bottom: 32px;
+      max-width: 360px;
+    }
+    .product-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .product-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px;
+      letter-spacing: 0.04em;
+      color: var(--text);
+    }
+    .keyboard-hint {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.35;
+    }
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 20px;
+      border: 1px solid #444;
+      border-radius: 3px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .keyboard-hint span {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ─── IMAGE PANEL ───────────────────────────────── */
+    .image-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      height: 100%;
+      overflow: hidden;
+    }
+    .img-glow {
+      position: absolute;
+      width: 55%;
+      height: 55%;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+      opacity: 0.14;
+      filter: blur(60px);
+      border-radius: 50%;
+      pointer-events: none;
+      transition: background 0.8s ease;
+    }
+    .product-img-wrap {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+    .product-img {
+      max-height: 90vh;
+      max-width: 140%;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 24px rgba(0,0,0,0.4));
+      animation: float 5s ease-in-out infinite;
+      user-select: none;
+      pointer-events: none;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      33%       { transform: translateY(-14px) rotate(0.5deg); }
+      66%       { transform: translateY(-8px) rotate(-0.5deg); }
+    }
+
+    /* ─── ARROWS ─────────────────────────────────────── */
+    .stage-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 15;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--muted);
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      backdrop-filter: blur(6px);
+      font-size: 28px;
+      user-select: none;
+    }
+    .stage-arrow:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    .stage-arrow.left  { left: 35px; }
+    .stage-arrow.right { right: 35px; }
+
+    /* ─── THUMB STRIP ───────────────────────────────── */
+    .thumb-strip-wrap {
+      position: relative;
+      z-index: 20;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 0 24px;
+      background: transparent;
+    }
+    .thumb-strip {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 20px;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 100px;
+      overflow-x: auto;
+      overflow-y: visible;
+      max-width: 90vw;
+      scrollbar-width: none;
+    }
+    .thumb-strip::-webkit-scrollbar { display: none; }
+
+    .thumb {
+      flex-shrink: 0;
+      width: 99px;
+      height: 99px;
+      border-radius: 100%;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      background: transparent;
+      position: relative;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), border-color 0.3s, box-shadow 0.3s;
+    }
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 5px;
+      display: block;
+      transition: transform 0.25s ease;
+    }
+    .thumb:hover { transform: translateY(-6px); border-color: rgba(255,255,255,0.2); }
+    .thumb:hover img { transform: scale(1.08); }
+    .thumb.active {
+      border-color: var(--accent);
+      transform: translateY(-8px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+    }
+    .thumb.active::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 3px;
+      box-shadow: inset 0 0 0 1px var(--accent);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* ─── PROGRESS BAR ──────────────────────────────── */
+    .progress-bar { display: none; }
+
+    /* ─── TRANSITIONS ───────────────────────────────── */
+    .info-inner.is-exiting .product-tag   { animation: exitLeft 0.22s ease forwards 0ms; }
+    .info-inner.is-exiting .product-name  { animation: exitLeft 0.22s ease forwards 30ms; }
+    .info-inner.is-exiting .product-desc  { animation: exitLeft 0.22s ease forwards 50ms; }
+    .info-inner.is-exiting .product-meta  { animation: exitLeft 0.22s ease forwards 60ms; }
+    .info-inner.is-exiting .keyboard-hint { animation: exitLeft 0.22s ease forwards 80ms; }
+
+    .info-inner.is-entering .product-tag   { animation: enterUp 0.38s cubic-bezier(0.16,1,0.3,1) both 0ms; }
+    .info-inner.is-entering .product-name  { animation: enterUp 0.38s cubic-bezier(0.16,1,0.3,1) both 50ms; }
+    .info-inner.is-entering .product-desc  { animation: enterUp 0.38s cubic-bezier(0.16,1,0.3,1) both 100ms; }
+    .info-inner.is-entering .product-meta  { animation: enterUp 0.38s cubic-bezier(0.16,1,0.3,1) both 130ms; }
+    .info-inner.is-entering .keyboard-hint { animation: enterUp 0.38s cubic-bezier(0.16,1,0.3,1) both 200ms; }
+
+    .product-img.is-exiting  { animation: imgOut 0.28s ease forwards; }
+    .product-img.is-entering { animation: imgIn 0.5s cubic-bezier(0.16,1,0.3,1) both 0.1s; }
+
+    @keyframes exitLeft {
+      to { opacity: 0; transform: translateX(-18px); }
+    }
+    @keyframes enterUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes imgOut {
+      to { opacity: 0; transform: scale(0.84) translateY(18px); }
+    }
+    @keyframes imgIn {
+      from { opacity: 0; transform: scale(1.08) translateY(-14px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 16px 24px; justify-content: center; }
+      .nav-links { display: none; }
+      .nav-counter { display: none; }
+      .nav-logo img { transform: scale(1.95) translateY(45%); transform-origin: center center; }
+
+      .selector-content { padding: 80px 24px 0; }
+      .selector-headline h1 { font-size: clamp(32px, 9vw, 56px); }
+      .selector-logo { height: 80px; }
+      .selector-footer { height: 50vh; }
+      .sel-pillow img  { height: 44vh; }
+
+      .stage {
+        padding: 80px 24px 16px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        overflow-y: auto;
+      }
+      .image-panel {
+        position: relative;
+        width: 100%;
+        height: 76vh;
+        flex-shrink: 0;
+        margin-top: 25px;
+        order: -1;
+      }
+      .product-img { max-height: 72vh; max-width: 100%; }
+      .info-panel  { width: 100%; padding-right: 0; padding-top: 8px; }
+      .product-name { font-size: clamp(44px, 11vw, 72px); }
+      .product-desc { font-size: 13px; margin-bottom: 20px; }
+      .keyboard-hint { display: none; }
+      .stage-arrow   { display: none; }
+      .thumb-strip   { padding: 10px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Fixed bg layers -->
+<div class="bg-layer"></div>
+<div class="bg-overlay"></div>
+<div class="bg-bloom" id="bgBloom"></div>
+
+<!-- ── LOADING ─────────────────────────────────────── -->
+<div class="loading-screen" id="loadingScreen">
+  <img class="loading-logo" src="assets/images/logoocto.png" alt="Octo Control">
+</div>
+
+<!-- ── FIXED NAV ──────────────────────────────────── -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <img src="assets/images/logoocto.png" alt="Octo Control">
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Coleção</a></li>
+    <li><a href="#">Sobre</a></li>
+    <li><a href="#">Contato</a></li>
+  </ul>
+  <div class="nav-counter hidden" id="navCounter">
+    <span id="counterCurrent">01</span> / <span id="counterTotal">07</span>
+  </div>
+</nav>
+
+<!-- ── PAGE WRAPPER ───────────────────────────────── -->
+<div class="page-wrapper" id="pageWrapper">
+
+  <!-- ══ SCREEN 1 — SELECTOR ══════════════════════ -->
+  <section class="screen selector-screen" id="selectorScreen">
+
+    <div class="selector-content">
+      <img class="selector-logo" src="assets/images/logoocto.png" alt="Octo Control">
+      <div class="selector-headline">
+        <h1>Dá um up<br>no seu <em>lar</em></h1>
+        <p class="selector-subline">Estampas nerds exclusivas em tecido macio 100% poliéster.<br>Zíper invisível, cores vibrantes, anti-alérgico. 45 × 45 cm.</p>
+      </div>
+      <div class="scroll-hint">
+        <span class="scroll-hint-label">escolhe uma almofada</span>
+        <div class="scroll-hint-arrow">↓</div>
+      </div>
+    </div>
+
+    <div class="selector-footer">
+      <!-- Pillows match SVG rect positions (left to right) -->
+      <!-- pattern0 → snes_fever -->
+      <div class="sel-pillow" data-index="0"
+           style="left:-4.5%; transform:rotate(-2.28deg); --bt:rotate(-2.28deg);">
+        <img src="assets/images/produtos/snes_fever.png?v=1775234662" alt="SNES Fever">
+      </div>
+      <!-- pattern1 → power_up -->
+      <div class="sel-pillow" data-index="1"
+           style="left:9.1%; --bt:rotate(0deg);">
+        <img src="assets/images/produtos/power_up.png?v=1775234662" alt="Power Up">
+      </div>
+      <!-- pattern2 → blazing_genesis -->
+      <div class="sel-pillow" data-index="2"
+           style="left:22.4%; transform:rotate(-8.6deg); --bt:rotate(-8.6deg);">
+        <img src="assets/images/produtos/blazing_genesis.png?v=1775234662" alt="Blazing Genesis">
+      </div>
+      <!-- pattern3 → selfie (atrás) -->
+      <div class="sel-pillow" data-index="5"
+           style="left:61.6%; transform:rotate(2.28deg); --bt:rotate(2.28deg); z-index:6;">
+        <img src="assets/images/produtos/selfie.png?v=1775234662" alt="Selfie">
+      </div>
+      <!-- pattern4 → triforce (meio) -->
+      <div class="sel-pillow" data-index="4"
+           style="left:54.1%; --bt:rotate(0deg); z-index:7;">
+        <img src="assets/images/produtos/triforce.png?v=1775234662" alt="Triforce">
+      </div>
+      <!-- pattern5 → no_play_no_gain_xbox (frente) -->
+      <div class="sel-pillow" data-index="3"
+           style="left:46.7%; transform:rotate(1.5deg); --bt:rotate(1.5deg); z-index:8;">
+        <img src="assets/images/produtos/no_play_no_gain_xbox.png?v=1775234662" alt="No Play No Gain">
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ SCREEN 2 — STAGE ═════════════════════════ -->
+  <section class="screen stage-screen" id="stageScreen">
+
+    <div class="stage">
+      <button class="stage-arrow left" id="arrowLeft" aria-label="Anterior">&#8592;</button>
+
+      <div class="info-panel">
+        <div class="info-inner" id="infoInner">
+          <div class="product-tag" id="infoTag"></div>
+          <h1 class="product-name" id="infoName"></h1>
+          <p class="product-desc" id="infoDesc"></p>
+          <div class="product-meta">
+            <span class="product-price" id="infoPrice"></span>
+          </div>
+          <div class="keyboard-hint">
+            <span class="key">&#8592;</span>
+            <span class="key">&#8594;</span>
+            <span>navegar</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-panel">
+        <div class="img-glow" id="imgGlow"></div>
+        <div class="product-img-wrap">
+          <img class="product-img" id="mainImg" src="" alt="">
+        </div>
+      </div>
+
+      <button class="stage-arrow right" id="arrowRight" aria-label="Próximo">&#8594;</button>
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="thumb-strip-wrap">
+      <div class="thumb-strip" id="thumbStrip"></div>
+    </div>
+  </section>
+
+</div><!-- /page-wrapper -->
+
+<script>
+const PRODUCTS = [
+  {
+    id: 'snes_fever',
+    name: 'SNES Fever',
+    universe: 'Gaming Retro',
+    price: 'R$ 30,50',
+    desc: 'A nostalgia do Super Nintendo numa almofada que aquece qualquer sofá gamer.',
+    img: 'assets/images/produtos/snes_fever.png?v=1775234662',
+    accent: '#C62828'
+  },
+  {
+    id: 'power_up',
+    name: 'Power Up',
+    universe: 'Gaming Retro',
+    price: 'R$ 30,50',
+    desc: 'Coletaste todos os itens. Agora é hora de colecionar esta.',
+    img: 'assets/images/produtos/power_up.png?v=1775234662',
+    accent: '#4CAF50'
+  },
+  {
+    id: 'blazing_genesis',
+    name: 'Blazing Genesis',
+    universe: 'Gaming Retro',
+    price: 'R$ 30,50',
+    desc: 'O legado do Mega Drive, reinterpretado com atitude máxima.',
+    img: 'assets/images/produtos/blazing_genesis.png?v=1775234662',
+    accent: '#1565C0'
+  },
+  {
+    id: 'no_play_no_gain_xbox',
+    name: 'No Play No Gain',
+    universe: 'Xbox',
+    price: 'R$ 30,50',
+    desc: 'Sem jogo não há ganho. Para os guerreiros do controlo verde.',
+    img: 'assets/images/produtos/no_play_no_gain_xbox.png?v=1775234662',
+    accent: '#2E7D32'
+  },
+  {
+    id: 'triforce',
+    name: 'Triforce',
+    universe: 'The Legend of Zelda',
+    price: 'R$ 30,50',
+    desc: 'Coragem, Poder e Sabedoria reunidos na almofada mais épica de Hyrule.',
+    img: 'assets/images/produtos/triforce.png?v=1775234662',
+    accent: '#F9A825'
+  },
+  {
+    id: 'selfie',
+    name: 'Selfie',
+    universe: 'Adventure Time',
+    price: 'R$ 30,50',
+    desc: 'Hora de aventura, hora de selfie. Finn e Jake querem aparecer no teu feed.',
+    img: 'assets/images/produtos/selfie.png?v=1775234662',
+    accent: '#F5C400'
+  },
+  {
+    id: 'poptime',
+    name: 'Poptime',
+    universe: 'Adventure Time',
+    price: 'R$ 30,50',
+    desc: 'Pop, colorido e cheio de personalidade — exatamente como o Land of Ooo.',
+    img: 'assets/images/produtos/poptime.png?v=1775234662',
+    accent: '#E91E8C'
+  }
+];
+
+// ── DOM refs ─────────────────────────────────────────
+const loadingScreen  = document.getElementById('loadingScreen');
+const pageWrapper    = document.getElementById('pageWrapper');
+const selectorScreen = document.getElementById('selectorScreen');
+const stageScreen    = document.getElementById('stageScreen');
+const navCounter     = document.getElementById('navCounter');
+const infoInner      = document.getElementById('infoInner');
+const infoTag        = document.getElementById('infoTag');
+const infoName       = document.getElementById('infoName');
+const infoDesc       = document.getElementById('infoDesc');
+const infoPrice      = document.getElementById('infoPrice');
+const mainImg        = document.getElementById('mainImg');
+const imgGlow        = document.getElementById('imgGlow');
+const bgBloom        = document.getElementById('bgBloom');
+const thumbStrip     = document.getElementById('thumbStrip');
+const counterCurrent = document.getElementById('counterCurrent');
+const counterTotal   = document.getElementById('counterTotal');
+const arrowLeft      = document.getElementById('arrowLeft');
+const arrowRight     = document.getElementById('arrowRight');
+const progressBar    = document.getElementById('progressBar');
+
+// ── State ─────────────────────────────────────────────
+let current = 0;
+let isTransitioning = false;
+
+// ── Loading: lock scroll, force top, then release ────
+pageWrapper.classList.add('locked');
+pageWrapper.scrollTo({ top: 0, behavior: 'instant' });
+
+setTimeout(() => {
+  // Still locked — force top before fade
+  pageWrapper.scrollTo({ top: 0, behavior: 'instant' });
+  loadingScreen.classList.add('fade-out');
+  setTimeout(() => {
+    loadingScreen.style.display = 'none';
+    // Now release scroll
+    pageWrapper.classList.remove('locked');
+  }, 600);
+}, 3000);
+
+// ── Scroll observer: show/hide counter + nav logo ────
+const navLogo = document.querySelector('.nav-logo');
+// Start with nav logo hidden (we're on selector)
+navLogo.classList.add('hidden');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.target === stageScreen) {
+      navCounter.classList.toggle('hidden', !e.isIntersecting);
+      bgBloom.style.opacity = e.isIntersecting ? '0.06' : '0';
+      // Show nav logo only on stage screen
+      navLogo.classList.toggle('hidden', !e.isIntersecting);
+    }
+  });
+}, { threshold: 0.5 });
+observer.observe(stageScreen);
+
+// ── Build thumbnails ──────────────────────────────────
+counterTotal.textContent = String(PRODUCTS.length).padStart(2, '0');
+
+PRODUCTS.forEach((p, i) => {
+  const div = document.createElement('div');
+  div.className = 'thumb';
+  div.innerHTML = `<img src="${p.img}" alt="${p.name}" loading="lazy">`;
+  div.addEventListener('click', () => goTo(i));
+  thumbStrip.appendChild(div);
+});
+
+// ── Selector pillow clicks ────────────────────────────
+document.querySelectorAll('.sel-pillow').forEach(el => {
+  el.addEventListener('click', () => {
+    const idx = parseInt(el.dataset.index, 10);
+    // Select product instantly then scroll to stage
+    current = -1; // force re-render
+    goTo(idx, true);
+    stageScreen.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // Bounce on hover (only fires once per hover)
+  el.addEventListener('mouseenter', () => {
+    el.classList.remove('bouncing');
+    void el.offsetWidth; // force reflow
+    el.classList.add('bouncing');
+  });
+  el.addEventListener('animationend', () => {
+    el.classList.remove('bouncing');
+  });
+});
+
+// ── Accent ────────────────────────────────────────────
+function applyAccent(hex) {
+  document.documentElement.style.setProperty('--accent', hex);
+}
+
+// ── Render ────────────────────────────────────────────
+function renderContent(p) {
+  infoTag.textContent   = p.universe;
+  infoName.textContent  = p.name;
+  infoDesc.textContent  = p.desc;
+  infoPrice.textContent = p.price;
+
+  imgGlow.style.background  = `radial-gradient(circle, ${p.accent} 0%, transparent 70%)`;
+  bgBloom.style.background  = `radial-gradient(ellipse at center, ${p.accent} 0%, transparent 70%)`;
+  applyAccent(p.accent);
+
+  counterCurrent.textContent = String(current + 1).padStart(2, '0');
+  progressBar.style.width    = `${((current + 1) / PRODUCTS.length) * 100}%`;
+
+  mainImg.src = p.img;
+  mainImg.alt = p.name;
+
+  document.querySelectorAll('.thumb').forEach((t, i) => {
+    t.classList.toggle('active', i === current);
+  });
+
+  const activeThumb = thumbStrip.children[current];
+  if (activeThumb) activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+// ── Animated transition ───────────────────────────────
+function goTo(index, instant = false) {
+  if (isTransitioning || index === current) return;
+  if (index < 0) index = PRODUCTS.length - 1;
+  if (index >= PRODUCTS.length) index = 0;
+
+  isTransitioning = true;
+
+  const doEnter = () => {
+    current = index;
+    renderContent(PRODUCTS[current]);
+
+    mainImg.style.animation = 'none';
+    mainImg.classList.remove('is-exiting');
+    mainImg.classList.add('is-entering');
+    infoInner.classList.remove('is-exiting');
+    infoInner.classList.add('is-entering');
+
+    const onDone = () => {
+      mainImg.classList.remove('is-entering');
+      infoInner.classList.remove('is-entering');
+      mainImg.style.animation = '';
+      isTransitioning = false;
+    };
+    mainImg.addEventListener('animationend', onDone, { once: true });
+    setTimeout(() => {
+      if (isTransitioning) {
+        mainImg.classList.remove('is-entering');
+        infoInner.classList.remove('is-entering');
+        mainImg.style.animation = '';
+        isTransitioning = false;
+      }
+    }, 700);
+  };
+
+  if (instant) { doEnter(); return; }
+
+  mainImg.classList.add('is-exiting');
+  infoInner.classList.add('is-entering', 'is-exiting');
+  setTimeout(() => {
+    infoInner.classList.remove('is-exiting');
+    doEnter();
+  }, 260);
+}
+
+// ── Arrow navigation ──────────────────────────────────
+arrowLeft.addEventListener('click',  () => goTo(current - 1));
+arrowRight.addEventListener('click', () => goTo(current + 1));
+
+// ── Keyboard ──────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  goTo(current - 1);
+  if (e.key === 'ArrowRight') goTo(current + 1);
+  if (e.key === 'Escape') selectorScreen.scrollIntoView({ behavior: 'smooth' });
+});
+
+// ── Touch swipe ───────────────────────────────────────
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].clientX; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 50) goTo(dx < 0 ? current + 1 : current - 1);
+}, { passive: true });
+
+// ── Init ──────────────────────────────────────────────
+renderContent(PRODUCTS[current]);
+infoInner.classList.add('is-entering');
+mainImg.classList.add('is-entering');
+setTimeout(() => {
+  infoInner.classList.remove('is-entering');
+  mainImg.classList.remove('is-entering');
+}, 800);
+</script>
+</body>
+</html>

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produto — Octo Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:  #1a1a1a;
+      --yellow: #F5A700;
+      --white:  #ffffff;
+      --gray:   #2e2e2e;
+      --light:  #f5f5f0;
+      --muted:  #888;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body:    'Space Grotesk', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--white);
+      color: var(--black);
+      overflow-x: hidden;
+    }
+
+    .bg-chevron {
+      background-color: var(--black);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40'%3E%3Cpolyline points='0,20 40,0 80,20' fill='none' stroke='%23272727' stroke-width='18'/%3E%3Cpolyline points='0,40 40,20 80,40' fill='none' stroke='%23272727' stroke-width='18'/%3E%3C/svg%3E");
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(26,26,26,0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 2px solid var(--yellow);
+    }
+
+    .header-logo img { height: 8px; display: block; transform: translateY(15%); }
+
+    nav { display: flex; gap: 32px; align-items: center; }
+
+    nav a {
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--white);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--yellow); }
+
+    .btn-header {
+      background: var(--yellow);
+      color: var(--black) !important;
+      padding: 8px 20px;
+      font-weight: 700 !important;
+    }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb {
+      padding: 88px 40px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .breadcrumb a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .breadcrumb a:hover { color: var(--yellow); }
+    .breadcrumb span { color: var(--black); font-weight: 600; }
+
+    /* ── PRODUTO PRINCIPAL ── */
+    .product-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      padding: 32px 40px 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 800px) {
+      .product-layout { grid-template-columns: 1fr; gap: 32px; }
+    }
+
+    @media (max-width: 768px) {
+      nav a:not(.btn-header) { display: none; }
+    }
+
+    /* ── GALERIA ── */
+    .gallery { display: flex; flex-direction: column; gap: 16px; }
+
+    .gallery-main {
+      aspect-ratio: 1;
+      background: var(--light);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .gallery-main img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+
+    .gallery-main:hover img { transform: scale(1.04); }
+
+    .gallery-ref {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: var(--yellow);
+      color: var(--black);
+      font-family: var(--font-display);
+      font-size: 14px;
+      padding: 4px 12px;
+    }
+
+    /* ── INFOS DO PRODUTO ── */
+    .product-info { padding-top: 8px; }
+
+    .product-universe {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 8px;
+    }
+
+    .product-name {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 5vw, 64px);
+      line-height: 1;
+      color: var(--black);
+      margin-bottom: 8px;
+    }
+
+    .product-price {
+      font-family: var(--font-display);
+      font-size: 48px;
+      color: var(--black);
+      margin-bottom: 4px;
+    }
+
+    .product-price-note {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    .divider {
+      height: 1px;
+      background: #eee;
+      margin: 28px 0;
+    }
+
+    /* ── SELETOR DE COR ── */
+    .color-label {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .color-label span {
+      color: var(--black);
+      font-weight: 700;
+    }
+
+    .color-options { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
+
+    .color-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .color-swatch {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .color-option:hover .color-swatch { transform: scale(1.1); }
+    .color-option.active .color-swatch { border-color: var(--black); }
+
+    .color-name {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── BOTÃO COMPRAR ── */
+    .buy-btn {
+      width: 100%;
+      background: var(--yellow);
+      color: var(--black);
+      font-family: var(--font-display);
+      font-size: 24px;
+      letter-spacing: 0.05em;
+      border: none;
+      padding: 18px 32px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-decoration: none;
+      margin-bottom: 12px;
+    }
+
+    .buy-btn:hover { background: #ffc107; transform: translateY(-2px); }
+
+    .buy-note {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* ── SPECS ── */
+    .specs { margin-top: 32px; }
+
+    .specs-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      color: var(--black);
+      margin-bottom: 16px;
+      letter-spacing: 0.05em;
+    }
+
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+
+    .spec-key { color: var(--muted); font-weight: 500; }
+    .spec-val { font-weight: 600; color: var(--black); }
+
+    /* ── MAIS PRODUTOS ── */
+    .more-section {
+      padding: 60px 40px 80px;
+      background: var(--light);
+    }
+
+    .more-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 8px;
+    }
+
+    .more-title {
+      font-family: var(--font-display);
+      font-size: 40px;
+      color: var(--black);
+      margin-bottom: 32px;
+    }
+
+    .more-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 900px)  { .more-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 480px)  { .more-grid { grid-template-columns: 1fr; } }
+
+    .mini-card {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      background: var(--white);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .mini-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.1); }
+
+    .mini-card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+    }
+
+    .mini-card-body { padding: 12px 14px; }
+
+    .mini-card-name {
+      font-family: var(--font-display);
+      font-size: 18px;
+      line-height: 1.1;
+      margin-bottom: 2px;
+    }
+
+    .mini-card-price {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--black);
+      padding: 48px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+      border-top: 2px solid var(--yellow);
+    }
+
+    .footer-logo img { height: 32px; }
+
+    .footer-info { font-size: 13px; color: #555; line-height: 1.8; }
+    .footer-info a { color: var(--yellow); text-decoration: none; }
+
+    .footer-copy { font-size: 12px; color: #444; text-align: right; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <a href="index.html" class="header-logo">
+      <img src="assets/images/logoocto.png" alt="Octo Control">
+    </a>
+    <nav>
+      <a href="index.html#produtos">Produtos</a>
+      <a href="index.html#sobre">Sobre</a>
+      <a href="index.html#contato" class="btn-header">Comprar</a>
+    </nav>
+  </header>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <a href="index.html">Início</a>
+    <span>›</span>
+    <a href="index.html#produtos">Produtos</a>
+    <span>›</span>
+    <span id="bc-name">—</span>
+  </div>
+
+  <!-- PRODUTO -->
+  <div class="product-layout">
+
+    <!-- Galeria -->
+    <div class="gallery">
+      <div class="gallery-main">
+        <img id="main-img" src="" alt="">
+        <span class="gallery-ref" id="product-ref">—</span>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="product-info">
+      <p class="product-universe" id="product-universe">—</p>
+      <h1 class="product-name" id="product-name">—</h1>
+
+      <div class="product-price">R$ 30,50</div>
+      <p class="product-price-note">por unidade · frete a calcular</p>
+
+      <div class="divider"></div>
+
+      <!-- Seletor de cor -->
+      <p class="color-label">Cor: <span id="selected-color-name">—</span></p>
+      <div class="color-options" id="color-options"></div>
+
+      <!-- CTA -->
+      <a id="whatsapp-btn" href="#" class="buy-btn" target="_blank">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        PEDIR VIA WHATSAPP
+      </a>
+      <p class="buy-note">Resposta em até 24h · Pagamento combinado</p>
+
+      <div class="divider"></div>
+
+      <!-- Specs -->
+      <div class="specs">
+        <p class="specs-title">ESPECIFICAÇÕES</p>
+        <div class="spec-row">
+          <span class="spec-key">Tamanho</span>
+          <span class="spec-val">45 × 45 cm</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Material</span>
+          <span class="spec-val">100% Poliéster</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Fecho</span>
+          <span class="spec-val">Zíper invisível</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Impressão</span>
+          <span class="spec-val">Digital, alta qualidade</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Enchimento</span>
+          <span class="spec-val">Não incluso</span>
+        </div>
+        <div class="spec-row" id="ref-row">
+          <span class="spec-key">Referência</span>
+          <span class="spec-val" id="spec-ref">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIS PRODUTOS -->
+  <div class="more-section">
+    <p class="more-eyebrow">Continue explorando</p>
+    <h2 class="more-title">MAIS ESTAMPAS</h2>
+    <div class="more-grid" id="more-grid"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">
+      <img src="assets/images/logoocto.png" alt="Octo Control">
+    </div>
+    <div class="footer-info">
+      OCTO CONTROL SERVIÇOS GRÁFICOS<br>
+      CNPJ: 22.230.256/0001<br>
+      <a href="mailto:contato@gustavogoncalves.me">contato@gustavogoncalves.me</a>
+    </div>
+    <div class="footer-copy">
+      © 2015 Octo Control<br>
+      Todos os direitos reservados
+    </div>
+  </footer>
+
+  <script>
+    const PRODUCTS = {
+      snes_fever: {
+        name: 'SNES Fever',
+        universe: 'Gaming Retro',
+        ref: 'AL30',
+        img: 'assets/images/produtos/snes_fever.png',
+        colors: [
+          { name: 'Amarelo', hex: '#F5C400' },
+          { name: 'Roxo',    hex: '#6A1B9A' },
+          { name: 'Limão',   hex: '#CDDC39' },
+        ]
+      },
+      power_up: {
+        name: 'Power Up',
+        universe: 'Gaming Retro',
+        ref: 'AL31',
+        img: 'assets/images/produtos/power_up.png',
+        colors: [
+          { name: 'Turquesa', hex: '#00BCD4' },
+          { name: 'Cinza',    hex: '#616161' },
+          { name: 'Vinho',    hex: '#7B1FA2' },
+        ]
+      },
+      blazing_genesis: {
+        name: 'Blazing Genesis',
+        universe: 'Gaming Retro',
+        ref: 'AL32',
+        img: 'assets/images/produtos/blazing_genesis.png',
+        colors: [
+          { name: 'Roxo', hex: '#6A1B9A' },
+          { name: 'Rosa', hex: '#E91E8C' },
+          { name: 'Azul', hex: '#1976D2' },
+        ]
+      },
+      no_play_no_gain_xbox: {
+        name: 'No Play No Gain',
+        universe: 'Xbox',
+        ref: 'AL33',
+        img: 'assets/images/produtos/no_play_no_gain_xbox.png',
+        colors: [
+          { name: 'Cinza', hex: '#424242' },
+          { name: 'Verde', hex: '#388E3C' },
+          { name: 'Roxo',  hex: '#6A1B9A' },
+        ]
+      },
+      no_play_no_gain_ps4: {
+        name: 'No Play No Gain',
+        universe: 'PlayStation',
+        ref: 'AL34',
+        img: 'assets/images/produtos/no_play_no_gain_ps4.png',
+        colors: [
+          { name: 'Chumbo', hex: '#212121' },
+          { name: 'Azul',   hex: '#0288D1' },
+          { name: 'Roxo',   hex: '#6A1B9A' },
+        ]
+      },
+      triforce: {
+        name: 'Triforce',
+        universe: 'Zelda',
+        ref: 'AL35',
+        img: 'assets/images/produtos/triforce.png',
+        colors: [
+          { name: 'Verde',    hex: '#388E3C' },
+          { name: 'Vermelho', hex: '#B71C1C' },
+          { name: 'Azul',     hex: '#1976D2' },
+        ]
+      },
+      selfie: {
+        name: 'Selfie',
+        universe: 'Adventure Time',
+        ref: 'AL36',
+        img: 'assets/images/produtos/selfie.png',
+        colors: [
+          { name: 'Padrão', hex: '#1A237E' },
+        ]
+      },
+      poptime: {
+        name: 'Poptime',
+        universe: 'Adventure Time',
+        ref: 'AL37',
+        img: 'assets/images/produtos/poptime.png',
+        colors: [
+          { name: 'Padrão', hex: '#F5C400' },
+        ]
+      },
+    };
+
+    // Carrega produto a partir da URL
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id') || 'triforce';
+    const p = PRODUCTS[id] || PRODUCTS['triforce'];
+
+    // Preenche dados
+    document.title = `${p.name} — Octo Control`;
+    document.getElementById('bc-name').textContent = p.name;
+    document.getElementById('product-universe').textContent = p.universe;
+    document.getElementById('product-name').textContent = p.name;
+    document.getElementById('product-ref').textContent = p.ref;
+    document.getElementById('spec-ref').textContent = p.ref;
+    document.getElementById('main-img').src = p.img;
+    document.getElementById('main-img').alt = p.name;
+
+    // Cores
+    const colorContainer = document.getElementById('color-options');
+    const colorNameEl = document.getElementById('selected-color-name');
+    let selectedColor = p.colors[0].name;
+    colorNameEl.textContent = selectedColor;
+
+    p.colors.forEach((c, i) => {
+      const opt = document.createElement('div');
+      opt.className = 'color-option' + (i === 0 ? ' active' : '');
+      opt.innerHTML = `
+        <div class="color-swatch" style="background:${c.hex}"></div>
+        <span class="color-name">${c.name}</span>
+      `;
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.color-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        selectedColor = c.name;
+        colorNameEl.textContent = c.name;
+        updateWhatsApp();
+      });
+      colorContainer.appendChild(opt);
+    });
+
+    // WhatsApp
+    function updateWhatsApp() {
+      const msg = encodeURIComponent(
+        `Olá! Quero encomendar a almofada *${p.name}* (${p.ref}) na cor *${selectedColor}*. Pode me ajudar?`
+      );
+      document.getElementById('whatsapp-btn').href =
+        `https://wa.me/5551916034033?text=${msg}`;
+    }
+    updateWhatsApp();
+
+    // Mais produtos
+    const moreGrid = document.getElementById('more-grid');
+    Object.entries(PRODUCTS)
+      .filter(([key]) => key !== id)
+      .slice(0, 4)
+      .forEach(([key, prod]) => {
+        const a = document.createElement('a');
+        a.href = `produto.html?id=${key}`;
+        a.className = 'mini-card';
+        a.innerHTML = `
+          <img src="${prod.img}" alt="${prod.name}" loading="lazy">
+          <div class="mini-card-body">
+            <div class="mini-card-name">${prod.name}</div>
+            <div class="mini-card-price">R$ 30,50</div>
+          </div>
+        `;
+        moreGrid.appendChild(a);
+      });
+  </script>
+</body>
+</html>
